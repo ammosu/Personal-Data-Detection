@@ -57,7 +57,7 @@ def analyze_with_openrouter(text):
             OPENROUTER_API_URL,
             headers=headers,
             json={
-                "model": "openai/gpt-3.5-turbo",  # 可換成其他模型
+                "model": "meta-llama/llama-3.1-70b-instruct:free",  # 可換成其他模型
                 "messages": [{"role": "user", "content": prompt}]
             }
         )
