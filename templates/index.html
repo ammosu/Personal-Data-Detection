@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人資訊偵測器</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #F9FAFB;
+            color: #212121;
+        }
+
+        .container {
+            background-color: #FFFFFF;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: #1E88E5;
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .example-btn {
+            padding: 12px 20px;
+            background-color: #1E88E5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .example-btn:hover {
+            background-color: #1565C0;
+            transform: scale(1.05);
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            margin: 16px 0;
+            padding: 14px;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 16px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            background-color: #43A047;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2E7D32;
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            background-color: #BDBDBD;
+            cursor: not-allowed;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 16px;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            min-height: 100px;
+            background-color: #FAFAFA;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .personal-info {
+            background-color: #FFCDD2;
+            padding: 4px 8px;
+            border-radius: 4px;
+            position: relative;
+            cursor: help;
+        }
+
+        .personal-info:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 12px;
+            background-color: #212121;
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            white-space: nowrap;
+            z-index: 1;
+            opacity: 0.9;
+        }
+
+        .regular-text {
+            background-color: #E8F5E9;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .loading {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #1E88E5;
+        }
+
+        .loading::after {
+            content: "處理中...";
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>個人資訊偵測器</h1>
+        <div class="examples">
+            <button class="example-btn" onclick="loadExample(0)">求職信範例</button>
+            <button class="example-btn" onclick="loadExample(1)">購物訂單範例</button>
+            <button class="example-btn" onclick="loadExample(2)">課程報名範例</button>
+            <button class="example-btn" onclick="loadExample(3)">租屋合約範例</button>
+            <button class="example-btn" onclick="loadExample(4)">博物館展覽範例</button>
+            <button class="example-btn" onclick="loadExample(5)">國家公園介紹範例</button>
+            <button class="example-btn" onclick="loadExample(6)">研究新聞範例</button>
+            <button class="example-btn" onclick="loadExample(7)">APP廣告範例</button>
+        </div>
+        <textarea id="inputText" placeholder="請輸入要檢測的文章..."></textarea>
+        <div class="controls">
+            <button onclick="detectPersonalInfo()" id="detectButton">開始偵測</button>
+        </div>
+        <div id="loading" class="loading" style="display: none;"></div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const examples = [
+            `我是王小明，今年28歲，畢業於台灣大學資訊工程系。目前居住在台北市信義區松仁路100號8樓。
+您可以透過我的手機0912345678或是Email xiaoming.wang@gmail.com聯繫我。
+我的身分證字號是A123456789，期待能收到面試通知。`,
+
+            `訂購人：李美玲
+配送地址：新北市板橋區民生路789號12樓
+聯絡電話：0987654321
+信用卡號：1234-5678-9012-3456
+出貨通知信箱：meiling.lee@yahoo.com.tw`,
+
+            `報名者：陳大華
+生日：民國82年7月4日
+聯絡電話：(02)2345-6789
+行動電話：0923456789
+E-mail：david.chen@hotmail.com
+通訊地址：桃園市中壢區中央路二段100號`,
+
+            `房客：張小玉
+身分證字號：B234567890
+戶籍地址：台中市西區民權路567號3樓
+連絡電話：0934567890
+緊急聯絡人：張大明（手機：0912123123）
+租賃地點：台北市大安區和平東路二段99號4樓`,
+            `奇美博物館近日推出一場以「未來城市」為主題的特展，展示了多項與智慧建築、綠能交通相關的創新設計。該展覽提供互動式體驗，讓參觀者深入了解未來科技如何改變人們的生活。`,
+            `玉山國家公園最近開放了全新的步道，供登山愛好者探索。這條步道長約10公里，沿途可欣賞到壯麗的山景與豐富的自然生態，是戶外活動的絕佳選擇。`,
+            `台大研究團隊近日在醫學領域取得突破，成功開發出一種新型疫苗，可以有效預防多種病毒感染。這項技術基於mRNA平台，未來將有助於提升疫苗的生產速度與效能。`,
+            `Anfu最近推出了一款能提高學習效率的App，專為學生與專業人士設計。該App結合了時間管理與重點標註功能，並支援多平台同步，讓使用者隨時隨地掌握學習進度。`,
+        ];
+
+        function loadExample(index) {
+            document.getElementById('inputText').value = examples[index];
+        }
+
+        async function detectPersonalInfo() {
+            const inputText = document.getElementById('inputText').value;
+            const detectButton = document.getElementById('detectButton');
+            const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            
+            if (!inputText.trim()) {
+                alert('請輸入文章內容');
+                return;
+            }
+
+            try {
+                detectButton.disabled = true;
+                loadingDiv.style.display = 'block';
+                resultDiv.innerHTML = '';
+
+                const response = await fetch('http://localhost:5000/api/detect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: inputText
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`伺服器錯誤：${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                let processedText = inputText;
+                const spans = data.result.spans.sort((a, b) => b.start - a.start);
+
+                spans.forEach(span => {
+                    const before = processedText.slice(0, span.start);
+                    const marked = processedText.slice(span.start, span.end);
+                    const after = processedText.slice(span.end);
+                    
+                    processedText = before + 
+                        `<span class="personal-info" title="${span.type}">${marked}</span>` + 
+                        after;
+                });
+
+                processedText = processedText.split(/(<span.*?<\/span>)/).map(text => {
+                    if (!text.startsWith('<span')) {
+                        return `<span class="regular-text">${text}</span>`;
+                    }
+                    return text;
+                }).join('');
+
+                resultDiv.innerHTML = processedText;
+
+            } catch (error) {
+                resultDiv.innerHTML = `錯誤：${error.message}`;
+            } finally {
+                detectButton.disabled = false;
+                loadingDiv.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
