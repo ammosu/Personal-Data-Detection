@@ -6,8 +6,10 @@ import requests
 from dotenv import load_dotenv
 
 app = Flask(__name__)
-CORS(app)
 load_dotenv()
+
+# 限制 CORS 來源
+CORS(app, resources={r"/api/*": {"origins": os.getenv('BASE_URL', 'https://your-domain.com')}})
 
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
@@ -29,7 +31,7 @@ def analyze_with_openrouter(text):
     try:
         headers = {
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "HTTP-Referer": "http://localhost:5000",  # 你的網站網址
+            "HTTP-Referer": os.getenv('BASE_URL', 'https://your-domain.com'),
             "Content-Type": "application/json"
         }
         
