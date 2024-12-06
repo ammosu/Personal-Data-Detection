@@ -27,10 +27,10 @@
             font-size: 32px;
             text-align: center;
             background: linear-gradient(90deg, #42A5F5, #1E88E5);
-            background-clip: text; /* 標準屬性 */
-            -webkit-background-clip: text; /* WebKit 前綴，為 Safari/Chrome 提供支持 */
-            color: transparent; /* 標準的透明文字顏色 */
-            -webkit-text-fill-color: transparent; /* 為 Safari/Chrome 避免填充文字顏色 */
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
             margin-bottom: 16px;
         }
 
@@ -88,8 +88,6 @@
 
         button {
             padding: 14px 24px;
-            background-color: #43A047;
-            color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -98,12 +96,27 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: white;
         }
 
-        button:hover {
+        .detect-btn {
+            background-color: #43A047;
+        }
+
+        .detect-btn:hover {
             background-color: #2E7D32;
             transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4);
+        }
+
+        .random-btn {
+            background-color: #7E57C2;
+        }
+
+        .random-btn:hover {
+            background-color: #5E35B1;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(94, 53, 177, 0.4);
         }
 
         button:disabled {
@@ -206,7 +219,10 @@
         </div>
         <textarea id="inputText" placeholder="請輸入要檢測的文章..."></textarea>
         <div class="controls">
-            <button onclick="detectPersonalInfo()" id="detectButton">
+            <button onclick="generateRandomText()" id="generateButton" class="random-btn">
+                <i class="fas fa-random"></i> 隨機產生文章
+            </button>
+            <button onclick="detectPersonalInfo()" id="detectButton" class="detect-btn">
                 <i class="fas fa-search"></i> 開始偵測
             </button>
         </div>
@@ -253,6 +269,29 @@ E-mail：david.chen@hotmail.com
 
         function loadExample(index) {
             document.getElementById('inputText').value = examples[index];
+        }
+
+        async function generateRandomText() {
+            const generateButton = document.getElementById('generateButton');
+            const loadingDiv = document.getElementById('loading');
+            
+            try {
+                generateButton.disabled = true;
+                loadingDiv.style.display = 'block';
+
+                const response = await fetch('/api/generate');
+                if (!response.ok) {
+                    throw new Error(`伺服器錯誤：${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                document.getElementById('inputText').value = data.text;
+            } catch (error) {
+                alert(`錯誤：${error.message}`);
+            } finally {
+                generateButton.disabled = false;
+                loadingDiv.style.display = 'none';
+            }
         }
 
         async function detectPersonalInfo() {
